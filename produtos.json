@@ -4,5 +4,11 @@
     "src": "imagem/1791828967832_2.jpeg",
     "price": "4,00",
     "description": "Chinelo com Palmeiras"
+  },
+  {
+    "id": "CH0002",
+    "src": "imagem/1791828971849_WhatsApp_Image_2026-10-07_at_11.55.07.jpeg",
+    "price": "5,00",
+    "description": "Chinelo Maromba"
   }
 ]
