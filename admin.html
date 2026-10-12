@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin — Catálogo</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <style>
+    :root {
+      --bg:      #f7f7f5;
+      --surface: #ffffff;
+      --fg:      #1a1a18;
+      --muted:   #6b7280;
+      --border:  #e8e8e6;
+      --radius:  12px;
+      --danger:  #ef4444;
+      --accent:  #3b82f6;
+      --success: #22c55e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:      #111110;
+        --surface: #1c1c1b;
+        --fg:      #f0efe8;
+        --muted:   #9ca3af;
+        --border:  #2a2a28;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg:      #111110;
+      --surface: #1c1c1b;
+      --fg:      #f0efe8;
+      --muted:   #9ca3af;
+      --border:  #2a2a28;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding-inline: 16px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    header {
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding-block: 16px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+
+    /* ── Card container (login, token) ──────── */
+    .card-wrap {
+      max-width: 420px;
+      margin: 64px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+    }
+
+    .card-wrap h2 { font-size: 1.1rem; margin-bottom: 6px; }
+    .card-wrap .subtitle { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+
+    /* ── Fields ─────────────────────────────── */
+    .field { margin-bottom: 12px; }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .field input, .field textarea {
+      width: 100%;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus, .field textarea:focus { border-color: var(--accent); }
+    .field textarea { resize: vertical; min-height: 64px; }
+
+    /* ── Buttons ─────────────────────────────── */
+    button {
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:disabled { opacity: 0.45; cursor: default; }
+    button:active:not(:disabled) { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 11px 20px;
+      width: 100%;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--fg);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-link {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 6px;
+      background: none;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: underline;
+    }
+
+    .btn-link:hover { color: var(--fg); }
+
+    .btn-logout {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: none;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    /* ── Upload zone ─────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      margin-block: 20px;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.04);
+    }
+
+    .upload-zone .upload-icon { font-size: 2rem; margin-bottom: 6px; }
+    .upload-zone strong { font-size: 0.9rem; }
+    .upload-zone p { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+
+    #file-input { display: none; }
+
+    /* ── Pending queue ───────────────────────── */
+    .queue {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-block: 20px;
+    }
+
+    .queue-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    .queue-item.uploading { opacity: 0.6; pointer-events: none; }
+
+    .queue-thumb {
+      width: 88px;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: var(--border);
+    }
+
+    .queue-fields {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .queue-fields .field { margin-bottom: 0; }
+
+    .queue-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* ── Section label ───────────────────────── */
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 10px;
+    }
+
+    /* ── Product grid ────────────────────────── */
+    .prod-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding-bottom: 48px;
+    }
+
+    @media (min-width: 560px) { .prod-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 840px) { .prod-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .prod-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .prod-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    .prod-card-info {
+      padding: 8px 9px 4px;
+    }
+
+    .prod-card-price {
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .prod-card-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .prod-card-actions {
+      padding: 6px 9px 9px;
+      display: flex;
+      gap: 5px;
+    }
+
+    /* ── Edit modal ──────────────────────────── */
+    .edit-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .edit-modal.open { display: flex; }
+
+    .edit-modal-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      cursor: pointer;
+    }
+
+    .edit-modal-card {
+      position: relative;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 100%;
+      max-width: 380px;
+      z-index: 1;
+    }
+
+    .edit-modal-card h3 { font-size: 1rem; margin-bottom: 14px; }
+
+    /* ── Toast ───────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--fg);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      line-height: 1.45;
+      text-align: center;
+      max-width: calc(100% - 32px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .toast.show  { opacity: 1; }
+    .toast.error { background: var(--danger); color: #fff; }
+
+    .empty-msg {
+      color: var(--muted);
+      font-size: 0.85rem;
+      grid-column: 1 / -1;
+      padding-block: 8px;
+    }
+
+    .hint { font-size: 0.77rem; color: var(--muted); line-height: 1.6; margin-top: 14px; }
+    .hint a { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ── CARREGANDO ─────────────────────────────────────────────────────── -->
+<div id="boot-screen">
+  <div class="card-wrap">
+    <p class="subtitle" style="margin:0">Carregando…</p>
+  </div>
+</div>
+
+<!-- ── LOGIN ─────────────────────────────────────────────────────────── -->
+<div id="login-screen" style="display:none">
+  <div class="card-wrap">
+    <h2>Admin — Catálogo</h2>
+    <p class="subtitle">Acesso restrito ao administrador.</p>
+
+    <div class="field">
+      <label for="user-input">Usuário</label>
+      <input type="text" id="user-input" autocomplete="username" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="pass-input">Senha</label>
+      <input type="password" id="pass-input" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn">Entrar</button>
+    <button class="btn-link" id="forgot-btn" type="button">Esqueci meu usuário ou senha</button>
+  </div>
+</div>
+
+<!-- ── CRIAR / REDEFINIR ACESSO ──────────────────────────────────────── -->
+<div id="setup-screen" style="display:none">
+  <div class="card-wrap">
+    <h2 id="setup-title">Criar acesso ao admin</h2>
+    <p class="subtitle" id="setup-intro-first">
+      Primeiro acesso. Crie o usuário e a senha do painel. Para confirmar que você
+      é dono do repositório <strong class="repo-name"></strong>, informe também um
+      token do GitHub com permissão de escrita.
+    </p>
+    <p class="subtitle" id="setup-intro-reset" style="display:none">
+      Defina um novo usuário e senha. Para confirmar que você é dono do repositório
+      <strong class="repo-name"></strong>, informe um token do GitHub com permissão de escrita.
+    </p>
+
+    <div class="field">
+      <label for="setup-token">Token do GitHub</label>
+      <input type="password" id="setup-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="setup-user">Novo usuário</label>
+      <input type="text" id="setup-user" autocomplete="username" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="setup-pass">Nova senha (mínimo 10 caracteres)</label>
+      <input type="password" id="setup-pass" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="setup-pass2">Repita a senha</label>
+      <input type="password" id="setup-pass2" autocomplete="new-password">
+    </div>
+    <button class="btn-primary" id="setup-btn">Criar acesso</button>
+    <button class="btn-link" id="setup-back-btn" type="button" style="display:none">Voltar para o login</button>
+
+    <p class="hint">
+      Ainda não tem um token?
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Criar aqui</a>
+      — em "Only select repositories" escolha <strong class="repo-name"></strong> e em
+      Permissions adicione <em>Contents → Read and write</em>.
+    </p>
+  </div>
+</div>
+
+<!-- ── TOKEN (primeira vez) ─────────────────────────────────────────── -->
+<div id="token-screen" style="display:none">
+  <div class="card-wrap">
+    <h2>Configuração inicial</h2>
+    <p class="subtitle">
+      Informe seu GitHub Personal Access Token. Ele ficará salvo neste
+      navegador — você não precisará inserir de novo.
+    </p>
+    <div class="field">
+      <label for="token-input">GitHub Personal Access Token</label>
+      <input type="password" id="token-input" placeholder="ghp_…" autocomplete="off" spellcheck="false">
+    </div>
+    <button class="btn-primary" id="token-btn">Salvar e continuar</button>
+    <p class="hint">
+      Ainda não tem um token?
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Criar aqui</a>
+      — repositório <strong class="repo-name"></strong>, permissão <em>Contents → Read and write</em>.
+    </p>
+  </div>
+</div>
+
+<!-- ── ADMIN ─────────────────────────────────────────────────────────── -->
+<div id="admin-screen" style="display:none">
+  <header>
+    <h1>Admin — Catálogo</h1>
+    <div style="display:flex;gap:6px">
+      <button class="btn-logout" id="change-token-btn" title="Alterar o token do GitHub">🔑 Token</button>
+      <button class="btn-logout" id="logout-btn">Sair</button>
+    </div>
+  </header>
+
+  <div style="padding-top:8px">
+    <div class="upload-zone" id="upload-zone" role="button" aria-label="Adicionar produto">
+      <div class="upload-icon">📷</div>
+      <strong>Clique ou arraste fotos aqui</strong>
+      <p>JPG, PNG, WebP — pode selecionar várias de uma vez</p>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*">
+
+    <!-- Fila de upload pendente -->
+    <div id="queue-wrap" style="display:none">
+      <div class="section-label">Preencha os dados antes de publicar</div>
+      <div class="queue" id="queue"></div>
+    </div>
+
+    <div class="section-label" id="grid-label" style="margin-top:8px">Produtos no catálogo</div>
+    <div class="prod-grid" id="prod-grid"></div>
+  </div>
+</div>
+
+<!-- ── Modal de troca de token ──────────────────────────────────────── -->
+<div class="edit-modal" id="change-token-modal">
+  <div class="edit-modal-bg" id="change-token-modal-bg"></div>
+  <div class="edit-modal-card">
+    <h3>Alterar Token do GitHub</h3>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;line-height:1.5">
+      Cole o novo token abaixo. Ele substitui o anterior salvo neste navegador.
+    </p>
+    <div class="field">
+      <label for="new-token-input">Novo Personal Access Token</label>
+      <input type="password" id="new-token-input" placeholder="ghp_…" autocomplete="off" spellcheck="false">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-primary" id="change-token-save-btn" style="flex:1">Salvar token</button>
+      <button class="btn-ghost"   id="change-token-cancel-btn">Cancelar</button>
+    </div>
+    <p class="hint" style="margin-top:12px">
+      Gere um novo token em
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">github.com → Settings → Personal access tokens</a>
+      — repositório <strong class="repo-name"></strong>, permissão <em>Contents → Read and write</em>.
+    </p>
+  </div>
+</div>
+
+<!-- ── Modal de edição ───────────────────────────────────────────────── -->
+<div class="edit-modal" id="edit-modal">
+  <div class="edit-modal-bg" id="edit-modal-bg"></div>
+  <div class="edit-modal-card">
+    <h3>Editar produto</h3>
+    <div class="field">
+      <label>ID</label>
+      <input type="text" id="edit-id" placeholder="CH001">
+    </div>
+    <div class="field">
+      <label>Preço (ex: 29,90)</label>
+      <input type="text" id="edit-price" placeholder="29,90" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label>Descrição</label>
+      <textarea id="edit-desc" placeholder="Chinelo Havaianas Slim…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-primary" id="edit-save-btn" style="flex:1">Salvar</button>
+      <button class="btn-ghost"   id="edit-cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="variaveis.js"></script>
+<script>
+  var CFG         = window.CONFIG || {};
+  var REPO        = (CFG.repositorio || '').trim() || detectRepo();
+  var BRANCH      = CFG.branch || 'main';
+  var TOKEN       = '';
+  var TOKEN_KEY   = 'admin_gh_token:' + REPO;
+  var CONFIG_PATH = 'admin-config.json';
+  var adminConfig = null;
+
+  // Descobre o repositório pelo endereço do GitHub Pages (usuario.github.io/repositorio).
+  // Fora do GitHub Pages, o repositório precisa vir de variaveis.js.
+  function detectRepo() {
+    var m = location.hostname.match(/^([^.]+)\.github\.io$/i);
+    if (!m) return '';
+    var first = location.pathname.split('/').filter(Boolean)[0];
+    if (!first || /\.html?$/i.test(first)) return m[1] + '/' + m[1] + '.github.io';
+    return m[1] + '/' + first;
+  }
+
+  // ── Crypto ─────────────────────────────────────────────────────────
+
+  function toHex(buf) {
+    return Array.from(new Uint8Array(buf)).map(function(b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  function randomSalt() {
+    var bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return toHex(bytes);
+  }
+
+  // PBKDF2 com salt: o resultado fica num repositório público, então precisa ser lento de adivinhar
+  async function hashCredentials(user, pass, salt, iterations) {
+    var enc = new TextEncoder();
+    var key = await crypto.subtle.importKey('raw', enc.encode(user + ':' + pass), 'PBKDF2', false, ['deriveBits']);
+    var bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: iterations },
+      key, 256
+    );
+    return toHex(bits);
+  }
+
+  async function validateToken(t) {
+    var res = await fetch('https://api.github.com/repos/' + REPO, {
+      headers: { Authorization: 'token ' + t }
+    });
+    var info = await res.json().catch(function() { return {}; });
+    if (!res.ok) throw new Error(info.message || 'HTTP ' + res.status);
+    if (!info.permissions || !info.permissions.push) {
+      throw new Error('resource not accessible by personal access token');
+    }
+    if (info.default_branch) BRANCH = info.default_branch;
+  }
+
+  // Leitura pública (sem token): só diz se o acesso já foi criado e qual o hash
+  async function loadConfig() {
+    var res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + CONFIG_PATH, { cache: 'no-store' });
+    if (res.status === 404) return null;
+    var json = await res.json().catch(function() { return {}; });
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    return JSON.parse(atob(json.content.replace(/\n/g, '')));
+  }
+
+  // ── GitHub API ─────────────────────────────────────────────────────
+
+  async function ghFetch(method, path, body) {
+    var res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + path, {
+      method: method,
+      headers: { Authorization: 'token ' + TOKEN, 'Content-Type': 'application/json' },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    var json = await res.json().catch(function() { return {}; });
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    return json;
+  }
+
+  async function getFile(path) { return ghFetch('GET', path, undefined); }
+
+  async function putFile(path, b64, sha, msg) {
+    var body = { message: msg, content: b64, branch: BRANCH };
+    if (sha) body.sha = sha;
+    return ghFetch('PUT', path, body);
+  }
+
+  async function deleteFile(path, sha, msg) {
+    return ghFetch('DELETE', path, { message: msg, sha: sha, branch: BRANCH });
+  }
+
+  // ── produtos.json ──────────────────────────────────────────────────
+
+  async function getProdutos() {
+    try {
+      var data = await getFile('produtos.json');
+      var text = atob(data.content.replace(/\n/g, ''));
+      return { list: JSON.parse(text), sha: data.sha };
+    } catch (e) {
+      // Arquivo não existe ainda → lista vazia (normal em repo novo)
+      var raw = (e.message || '').toLowerCase();
+      if (raw.includes('not found') || raw.includes('404')) {
+        return { list: [], sha: null };
+      }
+      // Qualquer outro erro (token expirado, sem permissão, sem internet)
+      // deve subir para loadProducts mostrar mensagem amigável
+      throw e;
+    }
+  }
+
+  async function saveProdutos(list, sha, msg) {
+    var b64  = btoa(unescape(encodeURIComponent(JSON.stringify(list, null, 2))));
+    var data = await putFile('produtos.json', b64, sha, msg);
+    return data.content.sha;
+  }
+
+  // ── State ──────────────────────────────────────────────────────────
+
+  var state = { list: [], sha: null };
+  var editingIndex = -1;
+
+  // ── Toast ──────────────────────────────────────────────────────────
+
+  var toastTimer;
+  function showToast(msg, isError) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { el.className = 'toast'; }, isError ? 6000 : 3500);
+  }
+
+  // ── Erros amigáveis ────────────────────────────────────────────────
+  // Traduz erros técnicos do GitHub para linguagem que o admin entende.
+
+  function friendlyError(e, context) {
+    var raw = (e && e.message ? e.message : '').toLowerCase();
+
+    // Sem internet
+    if (e instanceof TypeError || raw.includes('failed to fetch') || raw.includes('networkerror')) {
+      return 'Sem conexão com a internet. Verifique sua rede e tente novamente.';
+    }
+
+    // Token expirado ou inválido (401)
+    if (raw.includes('bad credentials') || raw.includes('401') || raw.includes('requires authentication')) {
+      if (context === 'token' || context === 'setup') {
+        return 'Token inválido. Verifique se você copiou o token completo e tente de novo.';
+      }
+      return 'Sua sessão expirou. Faça logout, gere um novo token no GitHub e entre novamente.';
+    }
+
+    // Sem permissão de escrita (403)
+    if (raw.includes('must have push access') || raw.includes('403') ||
+        raw.includes('resource not accessible') || raw.includes('permission denied')) {
+      if (context === 'token' || context === 'setup') {
+        return 'Este token não tem permissão de escrita no repositório ' + REPO + '. Ao criar o token, escolha esse repositório e marque "Contents → Read and write".';
+      }
+      return 'Sem permissão para realizar esta ação. O token pode ter expirado — faça logout e entre com um novo.';
+    }
+
+    // Arquivo ou repositório não encontrado (404)
+    if (raw.includes('not found') || raw.includes('404')) {
+      if (context === 'load') return 'Catálogo não encontrado no repositório. Verifique se o repositório está configurado corretamente.';
+      return 'O arquivo não foi encontrado no repositório. Pode ter sido movido ou excluído.';
+    }
+
+    // Limite de requisições (429 / rate limit)
+    if (raw.includes('rate limit') || raw.includes('429') || raw.includes('secondary rate')) {
+      return 'Muitas ações em pouco tempo. Aguarde alguns minutos e tente novamente.';
+    }
+
+    // Arquivo muito grande
+    if (raw.includes('too large') || raw.includes('larger than') || raw.includes('exceeds')) {
+      return 'Esta foto é grande demais. O GitHub aceita arquivos de até 100 MB. Reduza o tamanho da imagem e tente novamente.';
+    }
+
+    // Conflito de versão (409) — outra aba salvou primeiro
+    if (raw.includes('409') || raw.includes('conflict') || raw.includes('does not match')) {
+      return 'Conflito: o catálogo foi alterado em outra aba ou dispositivo ao mesmo tempo. Recarregue a página e tente novamente.';
+    }
+
+    // Dados inválidos (422)
+    if (raw.includes('422') || raw.includes('unprocessable') || raw.includes('invalid content encoding')) {
+      if (context === 'upload') return 'Não foi possível enviar a foto. Verifique se o arquivo é uma imagem válida (JPG, PNG ou WebP).';
+      return 'Dados inválidos. Verifique os campos preenchidos e tente novamente.';
+    }
+
+    // Instabilidade no GitHub (5xx)
+    if (raw.includes('500') || raw.includes('502') || raw.includes('503') || raw.includes('service unavailable')) {
+      return 'O GitHub está com instabilidade no momento. Aguarde alguns minutos e tente novamente.';
+    }
+
+    // Mensagem genérica por contexto
+    var byContext = {
+      load:   'Não foi possível carregar o catálogo.',
+      upload: 'Erro ao enviar a foto.',
+      save:   'Erro ao salvar o catálogo.',
+      edit:   'Não foi possível salvar as alterações.',
+      delete: 'Não foi possível remover o produto.',
+      token:  'Não foi possível verificar o token.',
+      setup:  'Não foi possível salvar o novo acesso.',
+      config: 'Não foi possível verificar o acesso ao painel.',
+    };
+    return (byContext[context] || 'Ocorreu um erro inesperado.') + ' Tente novamente ou contate o suporte técnico.';
+  }
+
+  // ── Grid render ────────────────────────────────────────────────────
+
+  function renderGrid(list) {
+    var grid  = document.getElementById('prod-grid');
+    var label = document.getElementById('grid-label');
+    label.textContent = 'Produtos no catálogo (' + list.length + ')';
+
+    if (list.length === 0) {
+      grid.innerHTML = '<p class="empty-msg">Nenhum produto ainda.</p>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    list.forEach(function(p, i) {
+      var card = document.createElement('div');
+      card.className = 'prod-card';
+
+      var img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = p.description || 'Produto';
+      // Lê direto do repositório: o GitHub Pages leva ~1 min para publicar fotos novas
+      img.src = 'https://raw.githubusercontent.com/' + REPO + '/' + BRANCH + '/' + p.src;
+      card.appendChild(img);
+
+      var info = document.createElement('div');
+      info.className = 'prod-card-info';
+
+      var priceEl = document.createElement('div');
+      priceEl.className = 'prod-card-price';
+      priceEl.textContent = 'R$ ' + (p.price || '—');
+
+      var metaEl = document.createElement('div');
+      metaEl.className = 'prod-card-meta';
+      metaEl.textContent = (p.description || '') + ' · ' + (p.id || '');
+
+      info.appendChild(priceEl);
+      info.appendChild(metaEl);
+      card.appendChild(info);
+
+      var actions = document.createElement('div');
+      actions.className = 'prod-card-actions';
+
+      var editBtn = document.createElement('button');
+      editBtn.className = 'btn-ghost';
+      editBtn.textContent = 'Editar';
+      editBtn.dataset.index = String(i);
+      editBtn.addEventListener('click', function() { openEditModal(parseInt(this.dataset.index)); });
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn-danger';
+      delBtn.textContent = 'Remover';
+      delBtn.dataset.index = String(i);
+      delBtn.addEventListener('click', function() { deleteProduct(parseInt(this.dataset.index)); });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      card.appendChild(actions);
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Load ───────────────────────────────────────────────────────────
+
+  async function loadProducts() {
+    document.getElementById('prod-grid').innerHTML = '<p class="empty-msg">Carregando…</p>';
+    try {
+      state = await getProdutos();
+      renderGrid(state.list);
+    } catch (e) {
+      document.getElementById('prod-grid').innerHTML =
+        '<p class="empty-msg">Não foi possível carregar os produtos. Recarregue a página.</p>';
+      showToast(friendlyError(e, 'load'), true);
+    }
+  }
+
+  // ── Upload queue ───────────────────────────────────────────────────
+
+  var pendingFiles = [];
+
+  function fileToBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload  = function() { resolve(reader.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addToQueue(files) {
+    var queue = document.getElementById('queue');
+    var wrap  = document.getElementById('queue-wrap');
+
+    Array.from(files).forEach(function(file) {
+      var idx = pendingFiles.length;
+      pendingFiles.push({ file: file, id: '', price: '', desc: '' });
+
+      var item = document.createElement('div');
+      item.className = 'queue-item';
+      item.id = 'qi-' + idx;
+
+      var thumb = document.createElement('img');
+      thumb.className = 'queue-thumb';
+      thumb.alt = file.name;
+      var url = URL.createObjectURL(file);
+      thumb.src = url;
+
+      var fields = document.createElement('div');
+      fields.className = 'queue-fields';
+
+      function makeField(label, placeholder, type, key) {
+        var f = document.createElement('div');
+        f.className = 'field';
+        var l = document.createElement('label');
+        l.textContent = label;
+        var inp = document.createElement('input');
+        inp.type = type || 'text';
+        inp.placeholder = placeholder;
+        if (key === 'id') {
+          inp.value = 'CH' + String(Date.now()).slice(-4);
+        }
+        inp.addEventListener('input', function() { pendingFiles[idx][key] = this.value; });
+        pendingFiles[idx][key] = inp.value;
+        f.appendChild(l);
+        f.appendChild(inp);
+        return f;
+      }
+
+      fields.appendChild(makeField('ID', 'CH001', 'text', 'id'));
+      fields.appendChild(makeField('Preço', '29,90', 'text', 'price'));
+      fields.appendChild(makeField('Descrição', 'Chinelo Havaianas…', 'text', 'desc'));
+
+      var actions = document.createElement('div');
+      actions.className = 'queue-actions';
+
+      var saveBtn = document.createElement('button');
+      saveBtn.className = 'btn-primary';
+      saveBtn.style.flex = '1';
+      saveBtn.style.padding = '7px';
+      saveBtn.textContent = 'Publicar';
+      saveBtn.addEventListener('click', function() { publishItem(idx); });
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn-ghost';
+      cancelBtn.textContent = 'Cancelar';
+      cancelBtn.addEventListener('click', function() {
+        URL.revokeObjectURL(url);
+        pendingFiles[idx] = null;
+        item.remove();
+        if (queue.children.length === 0) wrap.style.display = 'none';
+      });
+
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      fields.appendChild(actions);
+
+      item.appendChild(thumb);
+      item.appendChild(fields);
+      queue.appendChild(item);
+    });
+
+    wrap.style.display = '';
+  }
+
+  async function publishItem(idx) {
+    var pending = pendingFiles[idx];
+    if (!pending) return;
+    var item = document.getElementById('qi-' + idx);
+    if (!pending.desc.trim()) { showToast('Preencha a descrição.', true); return; }
+    if (!pending.price.trim()) { showToast('Preencha o preço.', true); return; }
+    if (!pending.id.trim()) { showToast('Preencha o ID.', true); return; }
+
+    item.classList.add('uploading');
+    try {
+      showToast('Enviando ' + pending.file.name + '…');
+      var base64   = await fileToBase64(pending.file);
+      var safeName = Date.now() + '_' + pending.file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var path     = 'imagem/' + safeName;
+
+      await putFile(path, base64, null, 'Admin: add ' + pending.file.name);
+
+      state.list.push({
+        id:          pending.id.trim(),
+        src:         path,
+        price:       pending.price.trim(),
+        description: pending.desc.trim(),
+      });
+      state.sha = await saveProdutos(state.list, state.sha, 'Admin: add ' + pending.id.trim());
+
+      pendingFiles[idx] = null;
+      item.remove();
+
+      var queue = document.getElementById('queue');
+      if (queue.children.length === 0) document.getElementById('queue-wrap').style.display = 'none';
+
+      renderGrid(state.list);
+      showToast('Produto publicado!');
+    } catch (e) {
+      item.classList.remove('uploading');
+      showToast(friendlyError(e, 'upload'), true);
+    }
+  }
+
+  // ── Edit modal ─────────────────────────────────────────────────────
+
+  function openEditModal(index) {
+    var p = state.list[index];
+    editingIndex = index;
+    document.getElementById('edit-id').value    = p.id || '';
+    document.getElementById('edit-price').value = p.price || '';
+    document.getElementById('edit-desc').value  = p.description || '';
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+    editingIndex = -1;
+  }
+
+  document.getElementById('edit-save-btn').addEventListener('click', async function() {
+    if (editingIndex < 0) return;
+    var id    = document.getElementById('edit-id').value.trim();
+    var price = document.getElementById('edit-price').value.trim();
+    var desc  = document.getElementById('edit-desc').value.trim();
+    if (!id || !price || !desc) { showToast('Preencha todos os campos.', true); return; }
+
+    var btn = document.getElementById('edit-save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Salvando…';
+
+    try {
+      state.list[editingIndex].id          = id;
+      state.list[editingIndex].price       = price;
+      state.list[editingIndex].description = desc;
+      state.sha = await saveProdutos(state.list, state.sha, 'Admin: edit ' + id);
+      renderGrid(state.list);
+      closeEditModal();
+      showToast('Produto atualizado.');
+    } catch (e) {
+      showToast(friendlyError(e, 'edit'), true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar';
+    }
+  });
+
+  document.getElementById('edit-cancel-btn').addEventListener('click', closeEditModal);
+  document.getElementById('edit-modal-bg').addEventListener('click', closeEditModal);
+
+  // ── Troca de token ─────────────────────────────────────────────────
+
+  function openChangeTokenModal() {
+    document.getElementById('new-token-input').value = '';
+    document.getElementById('change-token-modal').classList.add('open');
+  }
+
+  function closeChangeTokenModal() {
+    document.getElementById('change-token-modal').classList.remove('open');
+  }
+
+  document.getElementById('change-token-btn').addEventListener('click', openChangeTokenModal);
+  document.getElementById('change-token-cancel-btn').addEventListener('click', closeChangeTokenModal);
+  document.getElementById('change-token-modal-bg').addEventListener('click', closeChangeTokenModal);
+
+  document.getElementById('change-token-save-btn').addEventListener('click', async function() {
+    var input = document.getElementById('new-token-input');
+    var btn   = document.getElementById('change-token-save-btn');
+    var t = input.value.trim();
+    if (!t) { showToast('Cole o novo token antes de salvar.', true); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+    var oldToken = TOKEN;
+    TOKEN = t;
+
+    try {
+      await validateToken(t);
+      localStorage.setItem(TOKEN_KEY, t);
+      closeChangeTokenModal();
+      showToast('Token atualizado com sucesso!');
+      loadProducts();
+    } catch (e) {
+      TOKEN = oldToken;
+      showToast(friendlyError(e, 'token'), true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar token';
+    }
+  });
+
+  // ── Delete ─────────────────────────────────────────────────────────
+
+  async function deleteProduct(index) {
+    var prod = state.list[index];
+    if (!confirm('Remover "' + (prod.description || prod.id) + '"?')) return;
+    try {
+      showToast('Removendo…');
+      try {
+        var fd = await getFile(prod.src);
+        await deleteFile(prod.src, fd.sha, 'Admin: remove ' + prod.src);
+      } catch (e) { /* arquivo já removido, ignorar */ }
+      state.list.splice(index, 1);
+      state.sha = await saveProdutos(state.list, state.sha, 'Admin: remove ' + (prod.id || index));
+      renderGrid(state.list);
+      showToast('Removido.');
+    } catch (e) { showToast(friendlyError(e, 'delete'), true); }
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────────
+
+  async function handleLogin() {
+    var user = document.getElementById('user-input').value.trim();
+    var pass = document.getElementById('pass-input').value;
+    var btn  = document.getElementById('login-btn');
+    if (!user || !pass) { showToast('Preencha usuário e senha.', true); return; }
+
+    if (!adminConfig || !adminConfig.salt || !adminConfig.hash) {
+      showToast('O acesso ao painel ainda não foi criado. Use "Esqueci meu usuário ou senha" para criar.', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+    try {
+      var hash = await hashCredentials(user, pass, adminConfig.salt, adminConfig.iterations || 210000);
+      if (hash !== adminConfig.hash) { showToast('Usuário ou senha incorretos.', true); return; }
+      var savedToken = localStorage.getItem(TOKEN_KEY);
+      if (!savedToken) { showScreen('token-screen'); }
+      else { TOKEN = savedToken; showScreen('admin-screen'); loadProducts(); }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    }
+  }
+
+  // mode: 'first' (repositório sem acesso criado) ou 'reset' (esqueci a senha)
+  function openSetup(mode) {
+    var first = mode === 'first';
+    document.getElementById('setup-title').textContent = first ? 'Criar acesso ao admin' : 'Redefinir acesso';
+    document.getElementById('setup-intro-first').style.display = first ? '' : 'none';
+    document.getElementById('setup-intro-reset').style.display = first ? 'none' : '';
+    document.getElementById('setup-back-btn').style.display = first ? 'none' : '';
+    document.getElementById('setup-btn').textContent = first ? 'Criar acesso' : 'Salvar novo acesso';
+    showScreen('setup-screen');
+  }
+
+  async function handleSetup() {
+    var t     = document.getElementById('setup-token').value.trim();
+    var user  = document.getElementById('setup-user').value.trim();
+    var pass  = document.getElementById('setup-pass').value;
+    var pass2 = document.getElementById('setup-pass2').value;
+    var btn   = document.getElementById('setup-btn');
+
+    if (!t || !user || !pass) { showToast('Preencha o token, o usuário e a senha.', true); return; }
+    if (pass.length < 10) { showToast('A senha precisa ter pelo menos 10 caracteres.', true); return; }
+    if (pass !== pass2) { showToast('As duas senhas estão diferentes. Digite a mesma senha nos dois campos.', true); return; }
+
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Salvando…';
+    try {
+      await validateToken(t);
+      TOKEN = t;
+
+      var salt = randomSalt();
+      var cfg = { salt: salt, iterations: 210000, hash: await hashCredentials(user, pass, salt, 210000) };
+
+      var current = null;
+      try { current = await getFile(CONFIG_PATH); }
+      catch (e) { if (!/not found|404/i.test(e.message || '')) throw e; }
+
+      await putFile(CONFIG_PATH, btoa(JSON.stringify(cfg, null, 2)), current && current.sha, 'Admin: define acesso ao painel');
+
+      adminConfig = cfg;
+      localStorage.setItem(TOKEN_KEY, t);
+      ['setup-token', 'setup-user', 'setup-pass', 'setup-pass2'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+      showScreen('admin-screen');
+      loadProducts();
+      showToast('Acesso salvo. Use esse usuário e senha nas próximas vezes.');
+    } catch (e) {
+      TOKEN = '';
+      showToast(friendlyError(e, 'setup'), true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+
+  async function handleTokenSetup() {
+    var input = document.getElementById('token-input');
+    var btn   = document.getElementById('token-btn');
+    var t = input.value.trim();
+    if (!t) { showToast('Insira o token.', true); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+    TOKEN = t;
+    try {
+      await validateToken(t);
+      localStorage.setItem(TOKEN_KEY, t);
+      showScreen('admin-screen');
+      loadProducts();
+    } catch (e) {
+      showToast(friendlyError(e, 'token'), true);
+      TOKEN = '';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar e continuar';
+    }
+  }
+
+  function logout() {
+    TOKEN = '';
+    document.getElementById('user-input').value = '';
+    document.getElementById('pass-input').value = '';
+    showScreen('login-screen');
+  }
+
+  function showScreen(id) {
+    ['boot-screen', 'login-screen', 'setup-screen', 'token-screen', 'admin-screen'].forEach(function(s) {
+      document.getElementById(s).style.display = (s === id) ? '' : 'none';
+    });
+  }
+
+  // ── Event wiring ───────────────────────────────────────────────────
+
+  document.getElementById('login-btn').addEventListener('click', handleLogin);
+  document.getElementById('pass-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleLogin();
+  });
+  document.getElementById('token-btn').addEventListener('click', handleTokenSetup);
+  document.getElementById('token-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleTokenSetup();
+  });
+  document.getElementById('logout-btn').addEventListener('click', logout);
+  document.getElementById('forgot-btn').addEventListener('click', function() { openSetup('reset'); });
+  document.getElementById('setup-back-btn').addEventListener('click', function() { showScreen('login-screen'); });
+  document.getElementById('setup-btn').addEventListener('click', handleSetup);
+  document.getElementById('setup-pass2').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleSetup();
+  });
+
+  var zone      = document.getElementById('upload-zone');
+  var fileInput = document.getElementById('file-input');
+
+  zone.addEventListener('click', function() { fileInput.click(); });
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files.length) addToQueue(fileInput.files);
+    fileInput.value = '';
+  });
+
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    var files = Array.from(e.dataTransfer.files).filter(function(f) { return f.type.startsWith('image/'); });
+    if (files.length) addToQueue(files);
+  });
+
+  // ── Boot ───────────────────────────────────────────────────────────
+
+  document.querySelectorAll('.repo-name').forEach(function(el) { el.textContent = REPO; });
+
+  if (!REPO) {
+    showScreen('login-screen');
+    showToast('Não foi possível descobrir o repositório. Preencha "repositorio" no arquivo variaveis.js (ex.: usuario/catalogo).', true);
+  } else loadConfig()
+    .then(function(cfg) {
+      adminConfig = cfg;
+      if (cfg) showScreen('login-screen');
+      else openSetup('first');
+    })
+    .catch(function(e) {
+      showScreen('login-screen');
+      showToast(friendlyError(e, 'config'), true);
+    });
+</script>
+
+</body>
+</html>

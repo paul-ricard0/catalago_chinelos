@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Catálogo</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --bg:           #f7f7f5;
+      --surface:      #ffffff;
+      --fg:           #1a1a18;
+      --muted:        #6b7280;
+      --border:       #e8e8e6;
+      --accent:       #25D366;
+      --accent-deep:  #128C7E;
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:      #111110;
+        --surface: #1c1c1b;
+        --fg:      #f0efe8;
+        --muted:   #9ca3af;
+        --border:  #2a2a28;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg:      #111110;
+      --surface: #1c1c1b;
+      --fg:      #f0efe8;
+      --muted:   #9ca3af;
+      --border:  #2a2a28;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding-inline: 16px;
+      padding-block: 0;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding-block: 14px;
+      z-index: 10;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .reload-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .reload-btn:active { transform: scale(0.97); }
+    .reload-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .reload-btn svg { width: 14px; height: 14px; }
+
+    /* ── Search ─────────────────────────────────────────────── */
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+
+    #search {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #search:focus { border-color: var(--accent); }
+    #search::placeholder { color: var(--muted); }
+
+    /* ── Gallery grid ───────────────────────────────────────── */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding-top: 16px;
+      padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+    }
+
+    @media (min-width: 560px)  { .gallery { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 840px)  { .gallery { grid-template-columns: repeat(4, 1fr); } }
+
+    /* ── Product card ───────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+    }
+
+    .card:active { transform: scale(0.98); }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-info {
+      padding: 9px 10px 11px;
+    }
+
+    .card-price {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .no-results {
+      color: var(--muted);
+      font-size: 0.875rem;
+      padding-top: 24px;
+      grid-column: 1 / -1;
+      text-align: center;
+    }
+
+    /* ── Modal ──────────────────────────────────────────────── */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    @media (min-width: 560px) {
+      .modal {
+        align-items: center;
+        padding: 24px;
+      }
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      cursor: pointer;
+    }
+
+    .modal-card {
+      position: relative;
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+      z-index: 1;
+      animation: slide-up 0.22s cubic-bezier(0.32,0.72,0,1);
+    }
+
+    @media (min-width: 560px) {
+      .modal-card {
+        border-radius: var(--radius);
+        animation: fade-in 0.18s ease;
+      }
+    }
+
+    @keyframes slide-up {
+      from { transform: translateY(40px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      transition: background 0.15s;
+    }
+
+    .modal-close:hover { background: rgba(0,0,0,0.55); }
+
+    .modal-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: var(--border);
+    }
+
+    .modal-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-body {
+      padding: 18px 20px 24px;
+    }
+
+    .modal-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-desc {
+      font-size: 0.95rem;
+      color: var(--fg);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .modal-id-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .modal-wa-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .modal-wa-btn:hover  { background: var(--accent-deep); }
+    .modal-wa-btn:active { transform: scale(0.98); }
+
+    .modal-wa-btn svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── WhatsApp flutuante ─────────────────────────────────── */
+    .wa-float {
+      position: fixed;
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      right: 20px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50px;
+      padding: 13px 18px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
+      z-index: 50;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+
+    .wa-float:hover  { background: var(--accent-deep); transform: translateY(-2px); }
+    .wa-float:active { transform: scale(0.97); }
+
+    .wa-float svg { width: 21px; height: 21px; flex-shrink: 0; }
+
+    @media (max-width: 380px) {
+      .wa-float .wa-label { display: none; }
+      .wa-float { padding: 14px; border-radius: 50%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card, .wa-float, .modal-card { transition: none; animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-row">
+      <h1>Catálogo de Produtos</h1>
+      <button class="reload-btn" id="reload-btn" type="button" aria-label="Atualizar catálogo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+        </svg>
+        Atualizar
+      </button>
+    </div>
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        type="search"
+        id="search"
+        placeholder="Buscar por descrição ou ID…"
+        autocomplete="off"
+        aria-label="Buscar produtos"
+      >
+    </div>
+  </header>
+
+  <div class="gallery" id="gallery"></div>
+
+  <!-- ── Modal ──────────────────────────────────────────────── -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Detalhes do produto">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" aria-label="Fechar">✕</button>
+      <div class="modal-img-wrap">
+        <img id="modal-img" src="" alt="">
+      </div>
+      <div class="modal-body">
+        <div class="modal-price" id="modal-price"></div>
+        <div class="modal-desc"  id="modal-desc"></div>
+        <span class="modal-id-tag" id="modal-id"></span>
+        <a class="modal-wa-btn" id="modal-wa-btn" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Pedir pelo WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Botão WhatsApp flutuante ───────────────────────────── -->
+  <a
+    class="wa-float"
+    id="wa-float"
+    href="#"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Falar no WhatsApp"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    <span class="wa-label">Falar no WhatsApp</span>
+  </a>
+
+  <script src="variaveis.js"></script>
+  <script>
+    // Se variaveis.js tiver erro de digitação, CONFIG não existe
+    var CFG = window.CONFIG || null;
+    var WA  = CFG ? String(CFG.whatsapp || '').replace(/\D/g, '') : '';
+    var allProducts = [];
+
+    if (CFG) {
+      document.title = CFG.nomeLoja || document.title;
+      document.querySelector('header h1').textContent = CFG.nomeLoja || 'Catálogo';
+      document.getElementById('wa-float').href = 'https://wa.me/' + WA;
+    }
+
+    function fillMessage(template, p) {
+      return template
+        .split('{descricao}').join(p.description || '')
+        .split('{id}').join(p.id || '')
+        .split('{preco}').join(p.price || '');
+    }
+
+    function openModal(p) {
+      var img   = document.getElementById('modal-img');
+      var price = document.getElementById('modal-price');
+      var desc  = document.getElementById('modal-desc');
+      var idTag = document.getElementById('modal-id');
+      var waBtn = document.getElementById('modal-wa-btn');
+
+      img.src        = p.src;
+      img.alt        = p.description || 'Produto';
+      price.textContent = 'R$ ' + (p.price || '—');
+      desc.textContent  = p.description || '';
+      idTag.textContent = 'ID: ' + (p.id || '—');
+
+      var msg = fillMessage(CFG.mensagemWhatsapp || 'Olá! Tenho interesse no produto {descricao} (ID: {id}).', p);
+      waBtn.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+
+      document.getElementById('modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function renderGallery(products) {
+      var gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+
+      if (products.length === 0) {
+        var msg = document.createElement('p');
+        msg.className = 'no-results';
+        msg.textContent = 'Nenhum produto encontrado.';
+        gallery.appendChild(msg);
+        return;
+      }
+
+      products.forEach(function(p) {
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', p.description || 'Produto');
+        card.addEventListener('click', function() { openModal(p); });
+        card.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(p); }
+        });
+
+        var img = document.createElement('img');
+        img.src     = p.src;
+        img.alt     = p.description || 'Produto';
+        img.loading = 'lazy';
+
+        var info = document.createElement('div');
+        info.className = 'card-info';
+
+        var priceEl = document.createElement('div');
+        priceEl.className   = 'card-price';
+        priceEl.textContent = 'R$ ' + (p.price || '—');
+
+        var metaEl = document.createElement('div');
+        metaEl.className   = 'card-meta';
+        metaEl.textContent = (p.description || '') + ' · ' + (p.id || '');
+
+        info.appendChild(priceEl);
+        info.appendChild(metaEl);
+        card.appendChild(img);
+        card.appendChild(info);
+        gallery.appendChild(card);
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', function() {
+      var q = this.value.trim().toLowerCase();
+      if (!q) { renderGallery(allProducts); return; }
+      var filtered = allProducts.filter(function(p) {
+        return (p.description || '').toLowerCase().includes(q) ||
+               (p.id || '').toLowerCase().includes(q);
+      });
+      renderGallery(filtered);
+    });
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+    document.getElementById('reload-btn').addEventListener('click', function() {
+      // URL nova faz o celular ignorar a cópia guardada da página
+      location.replace(location.pathname + '?v=' + Date.now());
+    });
+
+    if (!CFG) {
+      var warn = document.createElement('p');
+      warn.className = 'no-results';
+      warn.textContent = 'Não foi possível ler o arquivo variaveis.js. Confira se nenhuma aspa, vírgula ou chave foi apagada ao editar.';
+      document.getElementById('gallery').appendChild(warn);
+    } else {
+      fetch('produtos.json?v=' + Date.now(), { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { allProducts = data; renderGallery(allProducts); })
+        .catch(function() {});
+    }
+  </script>
+
+</body>
+</html>
