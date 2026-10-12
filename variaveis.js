@@ -1,8 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────
-//  CONFIGURAÇÕES DO CATÁLOGO
+//  CONFIGURAÇÕES DO CATÁLOGO — VALORES PADRÃO
 //
-//  Troque só o que está entre aspas e salve o arquivo.
-//  Não apague as aspas ('), as vírgulas (,) nem as chaves ({ }).
+//  O jeito recomendado de configurar é pelo GitHub, sem editar código:
+//  Settings → Secrets and variables → Actions → aba Variables.
+//  Nomes: WHATSAPP, NOME_LOJA, MENSAGEM_WHATSAPP, REPOSITORIO, BRANCH.
+//  Na publicação, cada variável preenchida lá substitui o valor abaixo.
+//  Depois de alterar, vá em Actions → "Publicar catálogo" → Run workflow.
 //
 //  Usuário e senha do admin NÃO ficam aqui: eles são criados no
 //  primeiro acesso a admin.html (este arquivo é público).

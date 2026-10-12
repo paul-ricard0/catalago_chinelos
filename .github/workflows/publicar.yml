@@ -1,0 +1,61 @@
+name: Publicar catálogo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gerar variaveis.js a partir de Settings → Variables
+        env:
+          WHATSAPP: ${{ vars.WHATSAPP }}
+          NOME_LOJA: ${{ vars.NOME_LOJA }}
+          MENSAGEM_WHATSAPP: ${{ vars.MENSAGEM_WHATSAPP }}
+          REPOSITORIO: ${{ vars.REPOSITORIO }}
+          BRANCH: ${{ vars.BRANCH }}
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const vm = require('vm');
+          // Valores do arquivo no repositório servem de padrão para variáveis não preenchidas
+          const ctx = {};
+          vm.runInNewContext(fs.readFileSync('variaveis.js', 'utf8'), ctx);
+          const cfg = ctx.CONFIG || {};
+          const map = {
+            whatsapp: 'WHATSAPP',
+            nomeLoja: 'NOME_LOJA',
+            mensagemWhatsapp: 'MENSAGEM_WHATSAPP',
+            repositorio: 'REPOSITORIO',
+            branch: 'BRANCH',
+          };
+          for (const [key, env] of Object.entries(map)) {
+            const v = (process.env[env] || '').trim();
+            if (v) cfg[key] = v;
+          }
+          fs.writeFileSync('variaveis.js', 'var CONFIG = ' + JSON.stringify(cfg, null, 2) + ';\n');
+          console.log('Configuração publicada:', { ...cfg });
+          EOF
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
