@@ -53,6 +53,10 @@ jobs:
           console.log('Configuração publicada:', { ...cfg });
           EOF
 
+      # Endereço novo a cada publicação: o navegador não reaproveita a configuração antiga
+      - name: Forçar navegadores a baixar a configuração nova
+        run: sed -i "s|src=\"variaveis.js\"|src=\"variaveis.js?v=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}\"|" index.html admin.html
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
