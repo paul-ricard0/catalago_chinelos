@@ -15,7 +15,7 @@ var CONFIG = {
 
   // Número do WhatsApp que recebe os pedidos.
   // Só números: 55 + DDD + número. Exemplo: '5531999998888'
-  whatsapp: '5531983055118',
+  whatsapp: '5531972496651',
 
   // Nome que aparece no topo do catálogo e na aba do navegador.
   nomeLoja: 'Catálogo de Produtos',
